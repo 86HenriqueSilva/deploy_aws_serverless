@@ -1,0 +1,80 @@
+Aqui está um exemplo mais complexo que usa uma função Lambda para processar imagens e salva-las em um bucket do Amazon S3.
+
+     1.Crie uma função Lambda:
+        Abra o console da AWS e selecione o serviço Lambda
+        Clique em "Criar função"
+        Selecione "Autor a partir do zero"
+        Preencha os detalhes da função, como nome, descrição, tempo limite, etc.
+        Escolha a linguagem de programação Python 3.9
+        Cole o código abaixo na função:
+   //
+import json
+import boto3
+import os
+import uuid
+from PIL import Image
+
+s3 = boto3.resource('s3')
+bucket_name = os.environ['BUCKET_NAME']
+
+def lambda_handler(event, context):
+    # Obtenha o arquivo de imagem a partir da solicitação
+    image_data = event['body']
+    image_format = event['headers']['content-type'].split('/')[1]
+    image_name = str(uuid.uuid4()) + '.' + image_format
+    
+    # Salve o arquivo de imagem em um bucket do Amazon S3
+    s3.Bucket(bucket_name).put_object(Key=image_name, Body=image_data)
+    
+    # Crie uma miniatura da imagem e salve-a no mesmo bucket do Amazon S3
+    thumbnail_name = 'thumbnail-' + image_name
+    s3.Object(bucket_name, thumbnail_name).put(Body=create_thumbnail(image_data), ContentType='image/'+image_format)
+    
+    # Responda à solicitação com o URL da imagem e sua miniatura
+    response = {
+        "statusCode": 200,
+        "body": json.dumps({
+            "image_url": 'https://s3.amazonaws.com/' + bucket_name + '/' + image_name,
+            "thumbnail_url": 'https://s3.amazonaws.com/' + bucket_name + '/' + thumbnail_name
+        })
+    }
+
+    return response
+
+
+def create_thumbnail(image_data):
+    # Crie uma miniatura da imagem
+    with Image.open(io.BytesIO(image_data)) as im:
+        im.thumbnail((200, 200))
+        thumbnail_bytes = io.BytesIO()
+        im.save(thumbnail_bytes, format='JPEG')
+    return thumbnail_bytes.getvalue()
+ 
+    
+     1.Crie um gatilho:
+        Ainda no console da AWS, selecione o serviço API Gateway
+        Clique em "Criar API"
+        Selecione "REST API"
+        Escolha o protocolo HTTP e clique em "Criar API"
+        Crie um recurso com o nome "/images" e um método POST para esse recurso
+        Selecione "Integrar com Lambda Function" e escolha a função que você criou na etapa anterior
+        Salve as configurações
+
+    2.Implante a função Lambda:
+        Volte para a função Lambda que você criou anteriormente
+        Clique em "Implantar"
+        Escolha "Criar uma nova função"
+        Digite um nome para a nova versão da função e clique em "Criar"
+
+    3.Teste a função:
+        Volte para o console da API Gateway e selecione o método POST que você criou anteriormente
+        Clique em "Testar"
+        Adicione um arquivo de imagem à solicitação e clique em "Testar"
+        Você deve receber uma resposta com um código de status 200 e um corpo que contém URLs para a imagem e sua miniatura no bucket do Amazon S3
+        
+        
+        
+ 
+   
+   
+   
