@@ -1,0 +1,45 @@
+Claro, vou lhe dar um exemplo de como criar uma função Lambda em Python e configurar o API Gateway para acioná-la.
+
+    Crie uma função Lambda:
+        Abra o console da AWS e selecione o serviço Lambda
+        Clique em "Criar função"
+        Selecione "Autor a partir do zero"
+        Preencha os detalhes da função, como nome, descrição, tempo limite, etc.
+        Escolha a linguagem de programação Python 3.9
+        Copie e cole o código abaixo na função:
+
+//
+import json
+
+def lambda_handler(event, context):
+    body = {
+        "message": "Hello, world!"
+    }
+
+    response = {
+        "statusCode": 200,
+        "body": json.dumps(body)
+    }
+
+    return response
+ //
+    1.Crie um gatilho:
+        Ainda no console da AWS, selecione o serviço API Gateway
+        Clique em "Criar API"
+        Selecione "REST API"
+        Escolha o protocolo HTTP e clique em "Criar API"
+        Crie um recurso com o nome "/hello" e um método POST para esse recurso
+        Selecione "Integrar com Lambda Function" e escolha a função que você criou na etapa anterior
+        Salve as configurações
+
+    2.Implante a função Lambda:
+        Volte para a função Lambda que você criou anteriormente
+        Clique em "Implantar"
+        Escolha "Criar uma nova função"
+        Digite um nome para a nova versão da função e clique em "Criar"
+
+    3.Teste a função:
+        Volte para o console da API Gateway e selecione o método POST que você criou anteriormente
+        Clique em "Testar"
+        Preencha o corpo da solicitação com {"name": "John"} e clique em "Testar"
+        Você deve receber uma resposta com um código de status 200 e um corpo que contém {"message": "Hello, world!"}
